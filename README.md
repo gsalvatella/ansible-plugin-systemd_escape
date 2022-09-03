@@ -8,6 +8,11 @@ Requirements
 
 You'll need to have a recent-ish version of systemd on the host where the filer will be running.
 
+Installation
+------------
+
+Copy the `filter_plugins` folder inside your playbook or role top directory. Ansible will automatically recognise it and enable the plugins found inside.
+
 Example Playbook
 ----------------
 
@@ -26,3 +31,4 @@ Author Information
 ------------------
 
 * Estelle Poulin <dev@inspiredby.es>
+* Gerard Salvatella <github@alter.aleeas.com>
