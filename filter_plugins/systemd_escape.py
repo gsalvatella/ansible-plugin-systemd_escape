@@ -3,53 +3,51 @@ import subprocess
 
 SYSTEMD_ESCAPE = 'systemd-escape'
 
-def systemd_escape(s,
-        suffix=None,
-        template=None,
-        path=False,
-        mangle=False):
 
-    cmd = SYSTEMD_ESCAPE
+def do_escape(cmd):
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True)
+    except Exception as e:
+        raise AnsibleFilterError(
+            'Error in subprocess.run in systemd_escape filter plugin:\n%s' % e)
 
-    # If any two options are truthy.
+    return res.stdout.rstrip('\n')
+
+
+def systemd_escape(s, suffix=None, template=None, path=False, mangle=False):
+
+    cmd = [SYSTEMD_ESCAPE]
+
     if suffix and (template or mangle) or (template and mangle):
-        raise AnsibleFilterError("Options suffix, template, and mangle are mutually exclusive.")
+        raise AnsibleFilterError(
+            "Options suffix, template, and mangle are mutually exclusive.")
 
     if suffix:
-        cmd += " --suffix='{}'".format(suffix)
+        cmd.append(f'--suffix={suffix}')
     elif template:
-        cmd += " --template='{}'".format(template)
+        cmd.append(f'--template={template}')
     elif mangle:
-        cmd += " --mangle"
+        cmd.append('--mangle')
 
     if path:
-        cmd += " --path"
+        cmd.append('--path')
 
-    cmd += " '{}'".format(s)
+    cmd.append(s)
 
-    try:
-        res = subprocess.check_call(cmd)
-    except Exception as e:
-        raise AnsibleFilterError('Error in subprocess.check_call in systemd_escape filter plugin:\n%s' % e)
+    return do_escape(cmd)
 
-    return res
 
-def systemd_unescape(s,
-        path=False):
+def systemd_unescape(s, path=False):
 
-    cmd = SYSTEMD_ESCAPE
+    cmd = [SYSTEMD_ESCAPE]
 
     if path:
-        cmd += " --path"
+        cmd.append(' --path')
 
-    cmd += " '{}'".format(s)
+    cmd.append(s)
 
-    try:
-        res = subprocess.check_call(cmd)
-    except Exception as e:
-        raise AnsibleFilterError('Error in subprocess.check_call in systemd_escape filter plugin:\n%s' % e)
+    return do_escape(cmd)
 
-    return res
 
 class FilterModule(object):
     def filters(self):
